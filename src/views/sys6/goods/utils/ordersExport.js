@@ -98,6 +98,9 @@ export function prepareOrderExportChunks(orderGroupsArray, startIndexStr) {
         order_sn: item.orderCode,
         sBuyColor: item.sBuyColor || "",
         orderRemark: item.orderRemark,
+        _customPatch: item._customPatch,
+        worldCupPatch: item.worldCupPatch,
+        worldCupPatch2: item.worldCupPatch2,
       })),
     };
     defineIndex += 1;
@@ -131,6 +134,9 @@ const setExcelTabel = (arrs, defineIndex) => {
         sBuyColor: item.sBuyColor || "",
         buyerEmail: item.buyerEmail,
         orderRemark: item.orderRemark,
+        _customPatch: item._customPatch,
+        worldCupPatch: item.worldCupPatch,
+        worldCupPatch2: item.worldCupPatch2,
       }); //一定要j,excel的列唯一
       obj[`empty${j}-`] = emptyLeftTable;
     });

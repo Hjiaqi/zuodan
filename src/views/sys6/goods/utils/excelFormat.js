@@ -96,6 +96,14 @@ export const indexOrderTable = (i) => {
 </tr>
 </table>`;
 };
+const formatPatchValue = (value) => {
+  if (value == null) return '';
+  if (Array.isArray(value)) {
+    return value.filter(Boolean).join('\n');
+  }
+  return value;
+};
+
 export const orderTable = ({
   textColor,
   img,
@@ -109,7 +117,12 @@ export const orderTable = ({
   order_sn,
   orderRemark,
   sBuyColor = "", //同个商家颜色
+  _customPatch,
+  worldCupPatch,
+  worldCupPatch2,
 }) => {
+  const patchValue = formatPatchValue([_customPatch, worldCupPatch, worldCupPatch2]);
+  console.log('查看做单表补丁======', patchValue, _customPatch, worldCupPatch, worldCupPatch2)
   return `<table border="1"  align="center"  bgcolor="#e5e9f2">
         <colgroup>
             <col span="1"style="">
@@ -129,7 +142,7 @@ export const orderTable = ({
             <td style="color:green">${_instruction}</td>
         </tr>
         <tr align="center">
-            <td >${bdAndgg}</td>
+            <td >${patchValue || bdAndgg}</td>
         </tr>
         <tr align="center">
             <td style="color:red">${size}</td>

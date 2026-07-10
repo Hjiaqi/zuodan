@@ -19,6 +19,12 @@ import {
 } from "./sheetLayout.js";
 import { displayBdAndggCn } from "./patchDisplay.js";
 
+const formatSlotPatch = (slot) => {
+  const arr = [slot._customPatch, slot.worldCupPatch, slot.worldCupPatch2].filter(Boolean);
+  if (!arr.length) return "";
+  return arr.join("\n");
+};
+
 const FILL_ORDER = {
   type: "pattern",
   pattern: "solid",
@@ -179,7 +185,8 @@ export async function buildOrderSheet(workbook, chunks, options) {
         ins.value = slot._instruction;
         ins.font = { name: SHEET_FONT_NAME, size: SHEET_FONT_PT, color: { argb: "FF008000" } };
 
-        ws.getCell(r0 + 4, dataCol).value = displayBdAndggCn(slot.bdAndgg);
+        const patchValue = formatSlotPatch(slot);
+        ws.getCell(r0 + 4, dataCol).value = patchValue || displayBdAndggCn(slot.bdAndgg);
 
         const sz = ws.getCell(r0 + 5, dataCol);
         sz.value = slot.size;

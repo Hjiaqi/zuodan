@@ -58,7 +58,6 @@ function resetAIfInDz(a) {
 }) => {
   const type = isNumeric(size)?'童装':''
   let name = _instruction?_instruction:spec
-  console.log('查看定制姓名睡觉=========', _instruction)
   name = resetAIfInDz(name)
 
   const prodName = simplifyProductName(productName || "")
