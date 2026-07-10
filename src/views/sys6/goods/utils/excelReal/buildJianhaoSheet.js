@@ -8,9 +8,11 @@ import {
   SHEET_FONT_PT,
 } from "./sheetLayout.js";
 import { displayBdAndggCn } from "./patchDisplay.js";
+import { _SPEC_customized_rengong } from "../../../utils/enum.js";
+import { findIndex as _findIndex } from "lodash";
 
 const JIANHAO_IMG = 150;
-const JIANHAO_COL_COUNT = 9;
+const JIANHAO_COL_COUNT = 10;
 /** 捡号表顶行通栏标题（与旧版 HTML 表一致） */
 const JIANHAO_TOP_TITLE = "优先捡A号";
 /** 姓名和号码、臂章、款式、数量列正文字号（磅） */
@@ -30,7 +32,7 @@ function toArgb(css) {
 
 /**
  * @param {import('exceljs').Workbook} workbook
- * @param {Array<{ imgUrl?: string, prodName: string, displayName: string, armPatch: string, typeLabel: string, number: *, size: *, orderCode: *, textColor?: string }>} rows
+ * @param {Array<{ imgUrl?: string, prodName: string, displayName: string, armPatches: string[], typeLabel: string, number: *, size: *, orderCode: *, textColor?: string }>} rows
  * @param {{ skipImages?: boolean, imageFetchConcurrency?: number, headerDate?: string, onProgress?: (done:number,total:number)=>void }} options
  */
 export async function buildJianhaoSheet(workbook, rows, options) {
@@ -47,12 +49,13 @@ export async function buildJianhaoSheet(workbook, rows, options) {
     "姓名和号码",
     "胸章",
     "臂章",
+    "臂章图片",
     "款式",
     "数量",
     "码数",
     "订单号",
   ];
-  const colWidths = [22, 38, 38, 10, 28, 12, 12, 12, 38];
+  const colWidths = [22, 38, 38, 10, 28, 22, 12, 12, 12, 38];
   colWidths.forEach((w, i) => {
     ws.getColumn(i + 1).width = w;
   });
@@ -98,14 +101,28 @@ export async function buildJianhaoSheet(workbook, rows, options) {
     });
   }
 
+  // \u9884\u53d6\u81c2\u7ae0\u56fe\u7247
+  const armPatchUrls = [];
+  for (const row of rows) {
+    if (row.armPatches) {
+      for (const p of row.armPatches) {
+        const idx = _findIndex(_SPEC_customized_rengong, ["value", p]);
+        if (idx !== -1 && _SPEC_customized_rengong[idx].url) {
+          armPatchUrls.push(_SPEC_customized_rengong[idx].url);
+        }
+      }
+    }
+  }
+  const armPatchImageMap = armPatchUrls.length ? await buildImageBufferMap(armPatchUrls, options?.imageFetchConcurrency) : new Map();
+
   const imgRowPt = imageRowHeightPt(JIANHAO_IMG, 18);
   let r = 3;
   for (const row of rows) {
     ws.getRow(r).height = imgRowPt;
-    for (let c = 1; c <= 9; c++) {
+    for (let c = 1; c <= 10; c++) {
       const cell = ws.getCell(r, c);
       applyCardBorder(cell);
-      const centerish = c >= 6 && c <= 8;
+      const centerish = c >= 7 && c <= 9;
       cell.alignment = {
         horizontal: centerish ? "center" : "left",
         vertical: "middle",
@@ -127,21 +144,51 @@ export async function buildJianhaoSheet(workbook, rows, options) {
 
     ws.getCell(r, 4).value = "\u00a0";
 
-    const arm = ws.getCell(r, 5);
-    arm.value = displayBdAndggCn(row.armPatch);
-    arm.font = { name: SHEET_FONT_NAME, size: JIANHAO_EMPH_PT, bold: true };
+    // \u5904\u7406\u81c2\u7ae0\uff1a\u6587\u672c + \u56fe\u7247
+    const armCell = ws.getCell(r, 5);
+    const armTexts = [];
+    const armImgs = [];
+    if (row.armPatches) {
+      for (const p of row.armPatches) {
+        const cn = displayBdAndggCn(p);
+        const idx = _findIndex(_SPEC_customized_rengong, ["value", p]);
+        const url = idx !== -1 ? _SPEC_customized_rengong[idx].url : null;
+        if (cn) armTexts.push(cn);
+        if (url) {
+          const key = normalizeImageUrlForFetch(url);
+          const imgBuf = key ? armPatchImageMap.get(key) : null;
+          if (imgBuf) armImgs.push(imgBuf);
+        }
+      }
+    }
+    armCell.value = armTexts.join('\n');
+    armCell.font = { name: SHEET_FONT_NAME, size: JIANHAO_EMPH_PT, bold: true };
 
-    const typeCell = ws.getCell(r, 6);
+    // \u81c2\u7ae0\u56fe\u7247\u5d4c\u5165\u5230\u7b2c6\u5217\uff08\u5782\u76f4\u5806\u53e0\uff09
+    if (armImgs.length) {
+      const imgH = 50;
+      const imgW = 50;
+      armImgs.forEach((imgBuf, i) => {
+        const imageId = workbook.addImage({ buffer: imgBuf.buffer, extension: imgBuf.ext });
+        ws.addImage(imageId, {
+          tl: { col: 5.2, row: r - 1 + 0.05 + i * 0.55 },
+          ext: { width: imgW, height: imgH },
+          editAs: "oneCell",
+        });
+      });
+    }
+
+    const typeCell = ws.getCell(r, 7);
     typeCell.value = row.typeLabel;
     typeCell.font = { name: SHEET_FONT_NAME, size: JIANHAO_EMPH_PT, bold: true };
 
-    const numCell = ws.getCell(r, 7);
+    const numCell = ws.getCell(r, 8);
     numCell.value = row.number;
     numCell.font = { name: SHEET_FONT_NAME, size: JIANHAO_EMPH_PT, bold: true };
 
-    ws.getCell(r, 8).value = row.size;
+    ws.getCell(r, 9).value = row.size;
 
-    const oc = ws.getCell(r, 9);
+    const oc = ws.getCell(r, 10);
     oc.value = "\u00a0" + String(row.orderCode || "");
     oc.numFmt = "@";
     const ocArgb = toArgb(row.textColor) || "FF000000";

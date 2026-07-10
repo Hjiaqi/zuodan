@@ -113,7 +113,7 @@ export function prepareJianhaoSheetRows(arr) {
       imgUrl: item.imgUrl,
       prodName: simplifyProductName(item.productName || ""),
       displayName: name,
-      armPatch: [item._customPatch, item.worldCupPatch, item.worldCupPatch2].filter(Boolean).map(v => displayBdAndggCn(v)).join('\n'),
+      armPatches: [item._customPatch, item.worldCupPatch, item.worldCupPatch2].filter(Boolean),
       typeLabel: type,
       number: item.number,
       size: item.size,
