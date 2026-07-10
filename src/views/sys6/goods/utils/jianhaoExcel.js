@@ -1,5 +1,6 @@
 import { getDay } from "./main.js";
 import { simplifyProductName } from "./excelFormat.js";
+import { displayBdAndggCn } from "./excelReal/patchDisplay.js";
 
 const date = getDay();
 
@@ -65,9 +66,9 @@ function resetAIfInDz(a) {
   const formatCustomPatchValue = (value) => {
     if (value == null) return '';
     if (Array.isArray(value)) {
-      return value.filter(Boolean).join('\n');
+      return value.filter(Boolean).map(v => displayBdAndggCn(v)).join('\n');
     }
-    return value;
+    return displayBdAndggCn(value);
   };
 
   return `<tr align="left">
@@ -112,7 +113,7 @@ export function prepareJianhaoSheetRows(arr) {
       imgUrl: item.imgUrl,
       prodName: simplifyProductName(item.productName || ""),
       displayName: name,
-      armPatch: [item._customPatch, item.worldCupPatch, item.worldCupPatch2].filter(Boolean).join('\n'),
+      armPatch: [item._customPatch, item.worldCupPatch, item.worldCupPatch2].filter(Boolean).map(v => displayBdAndggCn(v)).join('\n'),
       typeLabel: type,
       number: item.number,
       size: item.size,

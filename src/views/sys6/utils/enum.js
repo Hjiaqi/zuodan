@@ -21,6 +21,10 @@ export const _SPEC_customized_rengong = [
     label: "西甲联赛",
   },
   {
+    value: "La Liga",
+    label: "西甲联赛",
+  },
+  {
     value: "UCL Patch",
     label: "欧洲冠军联赛",
   },
@@ -45,6 +49,10 @@ export const _SPEC_customized_rengong = [
     label: "英格兰足球超级联赛",
   },
   {
+    value: "EPL Patch（Golden)",
+    label: "英格兰足球超级联赛（金色）",
+  },
+  {
     value: "EPL",
     label: "英格兰足球超级联赛",
   },
@@ -55,6 +63,66 @@ export const _SPEC_customized_rengong = [
   {
     value: "Ligue 1 Patch",
     label: "法国足球甲级联赛",
+  },
+  {
+    value: "2026 FIFA World Cup White Patch",
+    label: "2026年国际足联世界杯白色补丁",
+    url: "https://img.staticdj.com/360f686a3dc0a77a4d1aa7fb4301f4a3.png"
+  },
+  {
+    value: "2026 FIFA World Cup Black Patch",
+    label: "2026年国际足联世界杯黑色补丁",
+    url: "https://img.staticdj.com/58931533bbf5cca92b5772f772df59c5.png"
+  },
+  {
+    value: "Gold Background with White Emblem Armband",
+    label: "金色背景白色徽章臂章",
+    url: "https://img.staticdj.com/d741ab30cd051bc7e006c7d9914ecf31.png"
+  },
+  {
+    value: "White Background with Gold Emblem Armband",
+    label: "白色背景金色徽章臂章",
+    url: "https://img.staticdj.com/4671571cabfffc36aa269c7abbf70792.png"
+  },
+  {
+    value: "White Unite For Peace",
+    label: "白人团结争取和平",
+    url: "https://img.staticdj.com/f78117b6dc0f912d035c229db2455e7e.png"
+  },
+  {
+    value: "Navy Blue Unite For Peace",
+    label: "海军团结和平",
+    url: "https://img.staticdj.com/e7a4d9d95044d959175a11e00b087d6d.png"
+  },
+  {
+    value: "Light Blue Unite For Peace",
+    label: "浅蓝色团结和平",
+    url: "https://img.staticdj.com/b9687bb46f537cd5a1db67e822deb4d1.png"
+  },
+  {
+    value: "Blue Football Unites the World",
+    label: "蓝色足球团结世界",
+    url: "https://img.staticdj.com/a8f73b29e4482c701ea68ebaf6651bd9.png"
+  },
+  {
+    value: "White Unite For Education",
+    label: "白人团结起来争取教育",
+    url: "https://img.staticdj.com/9152deed0de7252e6524e025164f6d4a.png"
+  },
+  {
+    value: "Black Unite For Education",
+    label: "黑人团结起来争取教育",
+    url: "https://img.staticdj.com/b41581bae08db1155bd75d31cfe6a85c.png"
+  },
+  {
+    value: "Purple Unite For Education",
+    label: "紫色团结教育",
+    url: "https://img.staticdj.com/0fa8ba4654d834d5d8bbb2972ff26f92.png"
+  },
+  {
+    value: "White Football Unites the World",
+    label: "白色足球团结世界",
+    url: "https://img.staticdj.com/0cbdbb84fa62440f39fdda8be32bd3eb.png"
   },
 ];
 export const _SPEC_nocustomized = [
