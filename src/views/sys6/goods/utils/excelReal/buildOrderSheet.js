@@ -18,6 +18,8 @@ import {
   SHEET_LEFT_INDEX_FONT_PT,
 } from "./sheetLayout.js";
 import { displayBdAndggCn } from "./patchDisplay.js";
+import { _SPEC_customized_rengong } from "../../../utils/enum.js";
+import { findIndex as _findIndex } from "lodash";
 
 const formatSlotPatch = (slot) => {
   const arr = [slot._customPatch, slot.worldCupPatch, slot.worldCupPatch2].filter(Boolean);
@@ -36,6 +38,8 @@ const LEFT_LABELS = [
   "购买选项",
   "客户备注定制",
   "补丁/规格",
+  "补丁图片1",
+  "补丁图片2",
   "尺寸",
   "订单号",
   "订单备注",
@@ -76,6 +80,23 @@ export async function buildOrderSheet(workbook, chunks, options) {
     });
   }
 
+  // 预取臂章图片
+  const armUrls = [];
+  for (const chunk of chunks) {
+    for (const slot of chunk.slots) {
+      if (!slot) continue;
+      for (const p of [slot._customPatch, slot.worldCupPatch, slot.worldCupPatch2].filter(Boolean)) {
+        const idx = _findIndex(_SPEC_customized_rengong, ["value", p]);
+        if (idx !== -1 && _SPEC_customized_rengong[idx].url) {
+          armUrls.push(_SPEC_customized_rengong[idx].url);
+        }
+      }
+    }
+  }
+  const armImageMap = armUrls.length && !skipImages
+    ? await buildImageBufferMap(armUrls, options?.imageFetchConcurrency)
+    : new Map();
+
   const ws = workbook.addWorksheet("Sheet1", {
     views: [{ state: "frozen", ySplit: 1 }],
   });
@@ -109,7 +130,7 @@ export async function buildOrderSheet(workbook, chunks, options) {
   });
 
   let r0 = 2;
-  const rowsInBlock = 8;
+  const rowsInBlock = 10;
   let chunkIdx = 0;
   for (const chunk of chunks) {
     chunkIdx += 1;
@@ -124,16 +145,17 @@ export async function buildOrderSheet(workbook, chunks, options) {
     }
     for (let k = 0; k < rowsInBlock; k++) {
       let h = k === 0 ? imgRowPt : TEXT_ROW_PT;
-      if (k === 7) h = remarkRowPt;
+      if (k === 9) h = remarkRowPt;
+      if (k === 5 || k === 6) h = 38; // 补丁图片1和2
       ws.getRow(r0 + k).height = h;
     }
 
-    for (let k = 0; k < 8; k++) {
+    for (let k = 0; k < rowsInBlock; k++) {
       const cell = ws.getCell(r0 + k, 1);
       applyCardBorder(cell);
       cell.alignment = {
         horizontal: "center",
-        vertical: k === 7 ? "top" : "middle",
+        vertical: k === 9 ? "top" : "middle",
         wrapText: true,
       };
       if (k === 0) {
@@ -156,13 +178,13 @@ export async function buildOrderSheet(workbook, chunks, options) {
       const emptyCol = 3 + j * 2;
       const slot = chunk.slots[j];
 
-      for (let k = 0; k < 8; k++) {
+      for (let k = 0; k < rowsInBlock; k++) {
         const cell = ws.getCell(r0 + k, dataCol);
         cell.fill = FILL_ORDER;
         cell.font = { name: SHEET_FONT_NAME, size: SHEET_FONT_PT };
         cell.alignment = {
           horizontal: "center",
-          vertical: k === 7 ? "top" : "middle",
+          vertical: k === 9 ? "top" : "middle",
           wrapText: true,
         };
         applyCardBorder(cell);
@@ -185,21 +207,40 @@ export async function buildOrderSheet(workbook, chunks, options) {
         ins.value = slot._instruction;
         ins.font = { name: SHEET_FONT_NAME, size: SHEET_FONT_PT, color: { argb: "FF008000" } };
 
-        const patchValue = formatSlotPatch(slot);
+        const patchValues = [slot._customPatch, slot.worldCupPatch, slot.worldCupPatch2].filter(Boolean);
+        const patchValue = patchValues.map(p => displayBdAndggCn(p)).join('\n');
         ws.getCell(r0 + 4, dataCol).value = patchValue || displayBdAndggCn(slot.bdAndgg);
 
-        const sz = ws.getCell(r0 + 5, dataCol);
+        // \u8865\u4e01\u56fe\u72471\u5d4c\u5165\u7b2c5\u884c\uff08k=5\uff09\uff0c\u8865\u4e01\u56fe\u72472\u5d4c\u5165\u7b2c6\u884c\uff08k=6\uff09
+        const patchArr = [slot._customPatch, slot.worldCupPatch, slot.worldCupPatch2].filter(Boolean);
+        patchArr.forEach((p, i) => {
+          if (i >= 2) return;
+          const idx = _findIndex(_SPEC_customized_rengong, ["value", p]);
+          const url = idx !== -1 ? _SPEC_customized_rengong[idx].url : null;
+          if (!url) return;
+          const imgKey = normalizeImageUrlForFetch(url);
+          const imgBuf = imgKey ? armImageMap.get(imgKey) : null;
+          if (!imgBuf) return;
+          const imageId = workbook.addImage({ buffer: imgBuf.buffer, extension: imgBuf.ext });
+          ws.addImage(imageId, {
+            tl: { col: dataCol - 1, row: r0 + 4 + i },
+            ext: { width: 40, height: 40 },
+            editAs: "oneCell",
+          });
+        });
+
+        const sz = ws.getCell(r0 + 7, dataCol);
         sz.value = slot.size;
         sz.font = { name: SHEET_FONT_NAME, size: SHEET_FONT_PT, color: { argb: "FFFF0000" } };
 
-        const sn = ws.getCell(r0 + 6, dataCol);
+        const sn = ws.getCell(r0 + 8, dataCol);
         sn.value = "\u00a0" + String(slot.order_sn || "");
         sn.numFmt = "@";
         const snColor = slot.sBuyColor ? slot.textColor : "blue";
         const snArgb = toArgb(snColor) || "FF0000FF";
         sn.font = { name: SHEET_FONT_NAME, size: SHEET_FONT_PT, color: { argb: snArgb }, underline: false };
 
-        ws.getCell(r0 + 7, dataCol).value = slot.orderRemark;
+        ws.getCell(r0 + 9, dataCol).value = slot.orderRemark;
 
         if (!skipImages && slot.imgUrl) {
           const imgKey = normalizeImageUrlForFetch(slot.imgUrl);
