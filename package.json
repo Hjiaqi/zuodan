@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build",
-    "deploy": "gh-pages -d dist -r https://github.com/Hjiaqi/zuodan.git -b gh-pages",
+    "deploy": "npm run build && mkdir -p .publish && cp -r dist/* .publish && gh-pages -d .publish -r git@github.com:Hjiaqi/zuodan.git -b gh-pages && rm -rf .publish",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
