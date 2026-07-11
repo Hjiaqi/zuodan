@@ -134,6 +134,8 @@ export async function buildWaibaoSheet(workbook, rows, options) {
 
   // 数据行 - 白底黑字
   const picRowHeight = orderSheetImageRowPt();
+  let orderGroupIndex = 0;
+  let prevOrderCode = null;
   for (let ri = 0; ri < rows.length; ri++) {
     const rowData = rows[ri];
     const rowIndex = ri + 2; // 1-based, 从第2行开始(第1行是表头)
@@ -141,9 +143,13 @@ export async function buildWaibaoSheet(workbook, rows, options) {
     const dataRow = ws.getRow(rowIndex);
     dataRow.height = picRowHeight;
 
-    // 序号
+    // 序号 - 如果订单号变了则递增
+    if (rowData.orderCode !== prevOrderCode) {
+      orderGroupIndex++;
+      prevOrderCode = rowData.orderCode;
+    }
     const seqCell = dataRow.getCell(1);
-    seqCell.value = ri + 1;
+    seqCell.value = orderGroupIndex;
     seqCell.font = DATA_FONT;
     seqCell.fill = WHITE_FILL;
     seqCell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
@@ -290,6 +296,34 @@ export async function buildWaibaoSheet(workbook, rows, options) {
       cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
       applyCardBorder(cell);
     }
+  }
+
+  // 合并相同订单号的单元格（第1列序号 + 第2列订单号 + 第12列发货编码）
+  let mergeStart = null;
+  let mergeOrderCode = null;
+  for (let ri = 0; ri < rows.length; ri++) {
+    const currentOrderCode = rows[ri].orderCode;
+    if (mergeOrderCode === currentOrderCode) {
+      // 继续合并
+      continue;
+    } else {
+      // 结束之前的合并
+      if (mergeStart !== null && mergeStart < ri) {
+        // Excel行号 = ri + 2（第1行是表头）
+        ws.mergeCells(mergeStart + 2, 1, ri + 1, 1);  // 序号列合并
+        ws.mergeCells(mergeStart + 2, 2, ri + 1, 2);  // 订单号列合并
+        ws.mergeCells(mergeStart + 2, 12, ri + 1, 12); // 发货编码列合并
+      }
+      // 开始新的合并
+      mergeStart = ri;
+      mergeOrderCode = currentOrderCode;
+    }
+  }
+  // 处理最后一组合并
+  if (mergeStart !== null && mergeStart < rows.length) {
+    ws.mergeCells(mergeStart + 2, 1, rows.length + 1, 1);  // 序号列合并
+    ws.mergeCells(mergeStart + 2, 2, rows.length + 1, 2);  // 订单号列合并
+    ws.mergeCells(mergeStart + 2, 12, rows.length + 1, 12); // 发货编码列合并
   }
 
   xlLog(`${logCtx} buildWaibaoSheet 结束`, { dataRows: rows.length });
