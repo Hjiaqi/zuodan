@@ -318,7 +318,7 @@ export default {
       this.newExportLoading = "baohuo";
       try {
         await exportWaibaoXlsx({
-          jianhaoDataSource: this._EXPORT_DATAS.jianhaoDataSource,
+          jianhaoDataSource: this._EXPORT_DATAS.waibaoDataSource,
           fileName: this.fileName,
           timer: this.timer,
           onProgress: this.makeImgProgress("外包报货"),

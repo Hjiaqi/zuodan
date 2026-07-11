@@ -7,6 +7,13 @@ export const jianhaoInit =  (dzDatasource)=>{
   return excelArrData
 }
 
+// 获取所有订单（不过滤非定制）
+export const jianhaoInitAll = (dzDatasource) => {
+  if (!dzDatasource.length) return;
+  const fData = flatData(dzDatasource);
+  return fData;
+}
+
 // 提取出所有的定制商品
 const getAllDzGoods = (arr) =>{
   const res = []

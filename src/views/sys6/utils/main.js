@@ -1,5 +1,5 @@
 import { cloneDeep as _cloneDeep, findIndex as _findIndex } from "lodash";
-import { jianhaoInit } from './jianhao.js';
+import { jianhaoInit, jianhaoInitAll } from './jianhao.js';
 import {
   _examine_hasRemark,
   _getSameBuyer,
@@ -59,6 +59,9 @@ export const _allSpecDatas = (allDatasObj) => {
   // ---定制，所有都在这里了
   const _examineDataSource = _DATA_OBJ.orderDataSource;
 
+  // 外包报货数据源：包含所有订单（不过滤非定制）
+  const _waibaoDataSource = jianhaoInitAll(_cloneDeep(_DATA_OBJ.orderDataSource));
+
   const obj = {
     doOrdersDataSource: {
       _sameBuyerDataSource,
@@ -70,6 +73,7 @@ export const _allSpecDatas = (allDatasObj) => {
     flatDataSource: _DATA_OBJ.flatDataSource,
     allOrderCodes: _DATA_OBJ.allOrderCodes,
     jianhaoDataSource: _jianhaoDataSource,
+    waibaoDataSource: _waibaoDataSource,
   };
   return obj;
 };
