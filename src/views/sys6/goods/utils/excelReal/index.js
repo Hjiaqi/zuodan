@@ -5,6 +5,7 @@ import { prepareJianhaoSheetRows } from "../jianhaoExcel.js";
 import { buildReportSheet } from "./buildReportSheet.js";
 import { buildOrderSheet } from "./buildOrderSheet.js";
 import { buildJianhaoSheet } from "./buildJianhaoSheet.js";
+import { buildWaibaoSheet, prepareWaibaoSheetRows } from "./buildWaibaoSheet.js";
 import { saveWorkbookAs } from "./downloadXlsx.js";
 import { xlLog, xlLogReset } from "./exportLog.js";
 
@@ -115,4 +116,31 @@ export async function exportJianhaoXlsx(opts) {
   xlLog("捡号 开始 writeBuffer + 下载", filename);
   await saveWorkbookAs(workbook, filename);
   xlLog("捡号 导出结束", "done");
+}
+
+/** 外包报货：真 xlsx + 内嵌图 */
+export async function exportWaibaoXlsx(opts) {
+  const {
+    jianhaoDataSource,
+    fileName,
+    timer,
+    skipImages,
+    imageFetchConcurrency,
+    onProgress,
+  } = opts;
+  xlLogReset();
+  xlLog("外包报货 导出开始", { fileName, timer });
+  const rows = prepareWaibaoSheetRows(jianhaoDataSource || []);
+  xlLog("外包报货 数据就绪", { rows: rows.length });
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "zuodan";
+  await buildWaibaoSheet(workbook, rows, {
+    skipImages,
+    imageFetchConcurrency,
+    onProgress,
+  });
+  const filename = `${fileName || ""}外包报货-${timer}.xlsx`;
+  xlLog("外包报货 开始 writeBuffer + 下载", filename);
+  await saveWorkbookAs(workbook, filename);
+  xlLog("外包报货 导出结束", "done");
 }

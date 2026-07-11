@@ -42,6 +42,9 @@
         <download-excel :class="['export-img img']" :data="jianhaoExport.data || []" :name="jianhaoExport.name">
           <i class="el-icon-download"></i>捡号
         </download-excel>
+        <download-excel :class="['export-img img']" :data="imgExport.data || []" :name="imgExport.name">
+          <i class="el-icon-download"></i>外包报货
+        </download-excel>
       </template>
 
       <template v-else>
@@ -67,6 +70,15 @@
           @click="downloadNewJianhaoXlsx"
         >
           <i class="el-icon-download"></i>捡号
+        </el-button>
+
+        <el-button
+          :class="['export-img', 'img']"
+          size="small"
+          :loading="newExportLoading === 'baohuo'"
+          @click="downloadNewBaohuoXlsx"
+        >
+          <i class="el-icon-download"></i>外包报货
         </el-button>
       </template>
 
@@ -113,6 +125,7 @@ import {
   exportReportXlsx,
   exportOrderCategoryXlsx,
   exportJianhaoXlsx,
+  exportWaibaoXlsx,
 } from "./utils/excelReal/index.js";
 import { jianhaoExcelInit } from './utils/jianhaoExcel.js';
 import { _snTxtStr, getDay } from "./utils/main.js";
@@ -295,6 +308,26 @@ export default {
         console.error(e);
         this.onExcelExportUiLog({ line: `[error] 捡号导出失败：${e && e.message ? e.message : e}` });
         this.$message.error("捡号导出失败");
+      } finally {
+        this.newExportLoading = "";
+      }
+    },
+    async downloadNewBaohuoXlsx() {
+      if (!this.ensureExportReady()) return;
+      this.startExportDebugSession("外包报货真 xlsx");
+      this.newExportLoading = "baohuo";
+      try {
+        await exportWaibaoXlsx({
+          jianhaoDataSource: this._EXPORT_DATAS.jianhaoDataSource,
+          fileName: this.fileName,
+          timer: this.timer,
+          onProgress: this.makeImgProgress("外包报货"),
+        });
+        this.$message.success("已下载外包报货（真 xlsx）");
+      } catch (e) {
+        console.error(e);
+        this.onExcelExportUiLog({ line: `[error] 外包报货导出失败：${e && e.message ? e.message : e}` });
+        this.$message.error("外包报货导出失败");
       } finally {
         this.newExportLoading = "";
       }

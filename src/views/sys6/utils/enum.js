@@ -11,6 +11,8 @@ export const _setKeyCnToEn = {
   买家Email: "buyerEmail",
   买家留言: "buyerLiuyan", //多一个买家留言
   产品名称: "productName",// 产品名称
+  付款时间: "payTime",
+  收货人姓名: "receiverName",
   //   买家支付运费: "buyerPayFreight",
 };
 

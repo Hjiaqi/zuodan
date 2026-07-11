@@ -105,6 +105,8 @@ export const _restoreDataFormat = (datas) => {
         buyerLiuyan: item.buyerLiuyan,
         orderRemark: item.orderRemark,
         productName: item.productName,
+        payTime: item.payTime,
+        receiverName: item.receiverName,
       });
     }
     //如果不曾存在这个单，加进去
